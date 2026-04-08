@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h2>Dashboard zarzadczy</h2>
+    <p>Glowny ekran programu z osadzonym dashboardem Grafany. Aktywny okres: {{ period|default:"brak aktywnego okresu" }}</p>
+  </div>
+  <div class="bi-actions">
+    <a href="{{ grafana_dashboard_url }}" data-grafana-href target="_blank" rel="noopener noreferrer" class="topbar-link">Edytuj w Grafanie</a>
+  </div>
+</div>
+
+<section class="panel bi-panel">
+  <div class="panel-heading">
+    <h3>{{ selected_bi.title }}</h3>
+    <p>{{ selected_bi.description }}</p>
+  </div>
+  <div class="bi-note">
+    To jest domyslny ekran startowy programu. Pelna edycja dashboardu i pozostale widoki pozostaja dostepne w Grafanie.
+  </div>
+  <div class="grafana-embed-shell">
+    <iframe
+      src="{{ grafana_embed_url }}"
+      data-grafana-src
+      title="{{ selected_bi.title }}"
+      class="grafana-embed"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+</section>
+{% endblock %}

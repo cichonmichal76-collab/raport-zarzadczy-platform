@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Produkcja{% endblock %}
+{% block content %}
+<h2>Produkcja</h2>
+<p>Okres: {{ period|default:"brak aktywnego okresu" }}</p>
+<table>
+  <thead>
+    <tr><th>Zlecenie</th><th>Status</th><th>Produkt</th><th>Stan obecny</th><th>Problem</th><th>Rozwiązanie</th></tr>
+  </thead>
+  <tbody>
+    {% for item in records %}
+    <tr>
+      <td>{{ item.order_number }}</td>
+      <td>{{ item.status }}</td>
+      <td>{{ item.product }}</td>
+      <td>{{ item.current_state|default:"-" }}</td>
+      <td>{{ item.problem|default:"-" }}</td>
+      <td>{{ item.solution|default:"-" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">Brak danych.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% include "includes/pagination.html" with page_obj=page_obj page_param="page" %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% if page_obj and page_obj.paginator.num_pages > 1 %}
+<nav class="pagination">
+  {% if page_obj.has_previous %}
+    <a href="?{{ page_param }}={{ page_obj.previous_page_number }}" class="pagination-link">← Poprzednia</a>
+  {% else %}
+    <span class="pagination-link is-disabled">← Poprzednia</span>
+  {% endif %}
+
+  <span class="pagination-info">
+    Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }}
+  </span>
+
+  {% if page_obj.has_next %}
+    <a href="?{{ page_param }}={{ page_obj.next_page_number }}" class="pagination-link">Następna →</a>
+  {% else %}
+    <span class="pagination-link is-disabled">Następna →</span>
+  {% endif %}
+</nav>
+{% endif %}

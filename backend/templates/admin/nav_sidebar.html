@@ -1,0 +1,10 @@
+<aside class="app-admin-sidebar">
+  <h1>Raport Zarzadczy</h1>
+  <nav class="app-admin-nav">
+    <a href="/" {% if request.path == "/" %}class="app-admin-current"{% endif %}>Dashboard</a>
+    <a href="/production/" {% if request.path == "/production/" %}class="app-admin-current"{% endif %}>Produkcja</a>
+    <a href="/rnd/" {% if request.path == "/rnd/" %}class="app-admin-current"{% endif %}>B+R</a>
+    <a href="/imports/upload/" {% if "/imports/" in request.path %}class="app-admin-current"{% endif %}>Import</a>
+    <a href="/admin/" {% if "/admin/" in request.path %}class="app-admin-current"{% endif %}>Admin</a>
+  </nav>
+</aside>

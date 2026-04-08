@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Raporty BI{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h2>Raporty BI</h2>
+    <p>Przegladaj zarzadcze KPI w ukladzie programu. Pozostale dashboardy i pelna edycja pozostaja dostepne w Grafanie.</p>
+  </div>
+  <div class="bi-actions">
+    <a href="{{ grafana_dashboard_url }}" data-grafana-href target="_blank" rel="noopener noreferrer" class="topbar-link">Edytuj w Grafanie</a>
+  </div>
+</div>
+
+<section class="panel bi-panel">
+  <div class="panel-heading">
+    <h3>{{ selected_bi.title }}</h3>
+    <p>{{ selected_bi.description }}</p>
+  </div>
+  <div class="bi-note">
+    Widok ponizej jest osadzony w programie. Jesli chcesz przejsc do pozostalych dashboardow albo zmienic wykresy, uklady lub zapytania, uzyj przycisku <strong>Edytuj w Grafanie</strong>.
+  </div>
+  <div class="grafana-embed-shell">
+    <iframe
+      src="{{ grafana_embed_url }}"
+      data-grafana-src
+      title="{{ selected_bi.title }}"
+      class="grafana-embed"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+</section>
+{% endblock %}

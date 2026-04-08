@@ -1,0 +1,24 @@
+apiVersion: 1
+
+datasources:
+  - name: Raport PostgreSQL
+    uid: raport-postgres
+    type: postgres
+    access: proxy
+    isDefault: true
+    editable: true
+    url: ${GRAFANA_POSTGRES_HOST}
+    user: ${GRAFANA_POSTGRES_USER}
+    secureJsonData:
+      password: ${GRAFANA_POSTGRES_PASSWORD}
+    jsonData:
+      database: ${GRAFANA_POSTGRES_DB}
+      sslmode: ${GRAFANA_POSTGRES_SSLMODE}
+      postgresVersion: 1600
+      timescaledb: false
+      connMaxLifetime: 14400
+      maxOpenConns: 20
+      maxIdleConns: 5
+      tlsAuth: false
+      tlsAuthWithCACert: false
+      tlsSkipVerify: true

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Raport Zarzadcza Platforma{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+  {% include "includes/app_topbar.html" %}
+
+  <div class="layout">
+    {% include "includes/app_sidebar.html" %}
+    <main class="content">
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags|default:'info' }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

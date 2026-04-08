@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Status importu{% endblock %}
+{% block content %}
+<h2>Status importu</h2>
+
+{% if batch.status == "pending" or batch.status == "processing" %}
+<meta http-equiv="refresh" content="4">
+{% endif %}
+
+<section class="panel">
+  <p><strong>Plik:</strong> {{ batch.file.name }}</p>
+  <p><strong>Okres:</strong> {{ batch.period }}</p>
+  <p><strong>Zrodlo:</strong> {{ batch.get_source_display }}</p>
+  <p><strong>Wgral:</strong> {{ batch.uploaded_by }}</p>
+  <p><strong>Status:</strong> <span class="status-badge status-{{ batch.status }}">{{ batch.get_status_display }}</span></p>
+  <p><strong>Rekordy zaimportowane w tym batchu:</strong> {{ batch.records_imported }}</p>
+  <p><strong>Pominiete wiersze:</strong> {{ batch.rows_skipped }}</p>
+  <p><a href="/imports/upload/">Wroc do importu</a></p>
+</section>
+
+<section class="panel" style="margin-top: 16px;">
+  <h3>Log importu</h3>
+  <div class="log-list">
+    {% for log in logs %}
+    <div class="log-entry">
+      <strong>{{ log.created_at|date:"d.m.Y H:i:s" }}</strong><br>
+      {{ log.message }}
+    </div>
+    {% empty %}
+    <div class="log-entry">Brak wpisow logu.</div>
+    {% endfor %}
+  </div>
+  {% include "includes/pagination.html" with page_obj=logs_page_obj page_param="logs_page" %}
+</section>
+
+<section class="panel" style="margin-top: 16px;">
+  <h3>Ostatnie importy</h3>
+  <table>
+    <thead>
+      <tr><th>Data</th><th>Okres</th><th>Zrodlo</th><th>Status</th><th>Szczegoly</th></tr>
+    </thead>
+    <tbody>
+      {% for item in recent_batches %}
+      <tr>
+        <td>{{ item.created_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ item.period }}</td>
+        <td>{{ item.get_source_display }}</td>
+        <td>{{ item.get_status_display }}</td>
+        <td><a href="{% url 'upload-batch-detail' item.pk %}">Otworz</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">Brak importow.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% include "includes/pagination.html" with page_obj=imports_page_obj page_param="imports_page" %}
+</section>
+{% endblock %}

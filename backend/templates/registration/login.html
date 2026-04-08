@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Logowanie{% endblock %}
+{% block content %}
+<section class="panel" style="max-width: 420px; margin: 40px auto;">
+  <h2>Logowanie</h2>
+  <p style="margin-bottom: 16px;">Zaloguj się, aby otworzyć dashboard zarządczy.</p>
+
+  {% if form.errors %}
+  <div style="margin-bottom: 16px; padding: 12px; border: 1px solid #d88; background: #fff0f0; color: #8b1e1e; border-radius: 8px;">
+    Nieprawidłowa nazwa użytkownika lub hasło.
+  </div>
+  {% endif %}
+
+  {% if next %}
+  <p style="margin-bottom: 12px; color: #555;">Po zalogowaniu wrócisz do poprzednio wybranej strony.</p>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="display: grid; gap: 12px;">
+      <label>
+        <div style="margin-bottom: 6px; font-weight: 600;">Nazwa użytkownika</div>
+        <input type="text" name="username" autofocus required style="width: 100%; padding: 10px 12px; border: 1px solid #cfcfcf; border-radius: 8px;">
+      </label>
+      <label>
+        <div style="margin-bottom: 6px; font-weight: 600;">Hasło</div>
+        <input type="password" name="password" required style="width: 100%; padding: 10px 12px; border: 1px solid #cfcfcf; border-radius: 8px;">
+      </label>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" style="padding: 10px 14px; border: none; border-radius: 8px; background: #295ea8; color: #fff; font-weight: 700; cursor: pointer;">
+        Zaloguj się
+      </button>
+    </div>
+  </form>
+</section>
+{% endblock %}

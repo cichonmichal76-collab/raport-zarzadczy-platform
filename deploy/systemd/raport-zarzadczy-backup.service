@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup bazy Raport Zarządczy
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/raport_zarzadczy_platform
+ExecStart=/bin/sh /opt/raport_zarzadczy_platform/deploy/backup/run-backup.sh

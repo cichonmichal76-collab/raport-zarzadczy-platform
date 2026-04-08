@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Import{% endblock %}
+{% block content %}
+<h2>Import Excel</h2>
+<form method="post" enctype="multipart/form-data" class="panel form-panel">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Wyślij wsad</button>
+</form>
+{% endblock %}

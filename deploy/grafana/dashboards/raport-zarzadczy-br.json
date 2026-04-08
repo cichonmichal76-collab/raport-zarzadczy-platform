@@ -1,0 +1,134 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 5, "w": 5, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name", "wideLayout": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT total_items FROM reports_grafana_rnd_kpi;", "refId": "A" }],
+      "title": "Projekty B+R",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "gridPos": { "h": 5, "w": 5, "x": 5, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name", "wideLayout": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT avg_progress FROM reports_grafana_rnd_kpi;", "refId": "A" }],
+      "title": "Sredni postep",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 5, "w": 5, "x": 10, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name", "wideLayout": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT avg_trl FROM reports_grafana_rnd_kpi;", "refId": "A" }],
+      "title": "Sredni TRL",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 5, "w": 5, "x": 15, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name", "wideLayout": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT completed_items FROM reports_grafana_rnd_kpi;", "refId": "A" }],
+      "title": "Projekty zakonczone",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 5, "w": 4, "x": 20, "y": 0 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "value_and_name", "wideLayout": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT issues_count FROM reports_grafana_rnd_kpi;", "refId": "A" }],
+      "title": "Blokery",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 8, "x": 0, "y": 5 },
+      "id": 6,
+      "options": { "displayLabels": ["name", "percent"], "legend": { "displayMode": "list", "placement": "bottom" }, "pieType": "donut", "tooltip": { "mode": "single" } },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT status, total FROM reports_grafana_rnd_statuses;", "refId": "A" }],
+      "title": "Statusy B+R",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 8, "x": 8, "y": 5 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "orientation": "auto", "showValue": "auto", "stacking": "none", "tooltip": { "mode": "single" } },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT trl_level, total FROM reports_grafana_rnd_trl;", "refId": "A" }],
+      "title": "Rozklad TRL",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 8, "x": 16, "y": 5 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "orientation": "auto", "showValue": "auto", "stacking": "none", "tooltip": { "mode": "single" } },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT work_type, total_items, avg_progress FROM reports_grafana_rnd_worktypes;", "refId": "A" }],
+      "title": "Typ prac i sredni postep",
+      "type": "barchart"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "raport-postgres" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 11, "w": 24, "x": 0, "y": 15 },
+      "id": 9,
+      "options": { "cellHeight": "sm", "footer": { "show": false }, "showHeader": true },
+      "pluginVersion": "11.2.0",
+      "targets": [{ "datasource": { "type": "postgres", "uid": "raport-postgres" }, "editorMode": "code", "format": "table", "rawQuery": true, "rawSql": "SELECT category, code, name, status, progress, trl_level, detail FROM reports_grafana_rnd_exceptions ORDER BY category, code;", "refId": "A" }],
+      "title": "Wyjatki i blokery B+R",
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["raport", "zarzadczy", "br"],
+  "templating": { "list": [] },
+  "time": { "from": "now-30d", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Raport Zarzadczy - B+R",
+  "uid": "raport-zarzadczy-br",
+  "version": 1,
+  "weekStart": ""
+}

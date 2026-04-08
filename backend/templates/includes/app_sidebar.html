@@ -1,0 +1,24 @@
+<aside class="{% if sidebar_class %}{{ sidebar_class }}{% else %}sidebar{% endif %}">
+  <h1>Raport Zarzadczy</h1>
+  <nav class="{% if sidebar_nav_class %}{{ sidebar_nav_class }}{% endif %}">
+    <a href="/" {% if request.path == "/" %}class="is-current"{% endif %}>Dashboard</a>
+    <details class="sidebar-group" {% if "/bi/" in request.path or "/grafana/" in request.path %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if '/bi/' in request.path or '/grafana/' in request.path %} is-current{% endif %}">Raporty BI</summary>
+      <div class="sidebar-subnav">
+        <a href="/bi/" {% if request.path == "/bi/" and request.GET.tab|default:"zarzad" == "zarzad" %}class="is-current"{% endif %}>Przeglad zarzadu</a>
+        <a href="/bi/?tab=produkcja" {% if request.path == "/bi/" and request.GET.tab == "produkcja" %}class="is-current"{% endif %}>Produkcja</a>
+        <a href="/bi/?tab=br" {% if request.path == "/bi/" and request.GET.tab == "br" %}class="is-current"{% endif %}>B+R</a>
+        <a href="/grafana/" data-grafana-href {% if "/grafana/" in request.path %}class="is-current"{% endif %}>Pelna Grafana</a>
+      </div>
+    </details>
+    <details class="sidebar-group" {% if "/imports/" in request.path or request.path == "/production/" or request.path == "/rnd/" %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if '/imports/' in request.path or request.path == '/production/' or request.path == '/rnd/' %} is-current{% endif %}">Import</summary>
+      <div class="sidebar-subnav">
+        <a href="/imports/upload/" {% if "/imports/" in request.path %}class="is-current"{% endif %}>Wgraj dane</a>
+        <a href="/production/" {% if request.path == "/production/" %}class="is-current"{% endif %}>Produkcja</a>
+        <a href="/rnd/" {% if request.path == "/rnd/" %}class="is-current"{% endif %}>B+R</a>
+      </div>
+    </details>
+    <a href="/admin/" {% if "/admin/" in request.path %}class="is-current"{% endif %}>Admin</a>
+  </nav>
+</aside>

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}B+R{% endblock %}
+{% block content %}
+<h2>B+R</h2>
+<p>Okres: {{ period|default:"brak aktywnego okresu" }}</p>
+<table>
+  <thead>
+    <tr><th>Kod</th><th>Nazwa</th><th>Status</th><th>TRL</th><th>Problem</th><th>Rozwiązanie</th></tr>
+  </thead>
+  <tbody>
+    {% for item in records %}
+    <tr>
+      <td>{{ item.code }}</td>
+      <td>{{ item.name }}</td>
+      <td>{{ item.status }}</td>
+      <td>{{ item.trl_level }}</td>
+      <td>{{ item.problem|default:"-" }}</td>
+      <td>{{ item.solution|default:"-" }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">Brak danych.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block admin_shell_main %}
+  <div id="content-main">
+    {% if form.errors and not form.non_field_errors %}
+    <p class="errornote">
+      {% if form.errors.items|length == 1 %}{% translate "Please correct the error below." %}{% else %}{% translate "Please correct the errors below." %}{% endif %}
+    </p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    {% for error in form.non_field_errors %}
+    <p class="errornote">{{ error }}</p>
+    {% endfor %}
+    {% endif %}
+
+    <div class="panel" style="max-width: 460px;">
+      <h2 style="margin-top:0;">Logowanie do admina</h2>
+      <p>Zaloguj sie, aby otworzyc panel administracyjny.</p>
+
+      <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+        <div style="display:grid; gap:12px;">
+          <div>
+            {{ form.username.errors }}
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}:</label>
+            {{ form.username }}
+          </div>
+          <div>
+            {{ form.password.errors }}
+            <label for="{{ form.password.id_for_label }}">{{ form.password.label }}:</label>
+            {{ form.password }}
+            <input type="hidden" name="next" value="{{ next }}">
+          </div>
+          {% url 'admin_password_reset' as password_reset_url %}
+          {% if password_reset_url %}
+          <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+          </div>
+          {% endif %}
+          <div>
+            <input type="submit" value="{% translate 'Log in' %}" class="topbar-btn">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
