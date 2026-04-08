@@ -3,10 +3,37 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEFAULT_ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "100.80.107.87",
+    "192.168.0.166",
+]
+
+DEFAULT_CSRF_TRUSTED_ORIGINS = [
+    "http://localhost",
+    "https://localhost",
+    "http://127.0.0.1",
+    "https://127.0.0.1",
+    "https://100.80.107.87",
+    "https://192.168.0.166",
+]
+
+
+def _split_env_list(value):
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def _merge_unique(items):
+    return list(dict.fromkeys(items))
+
+
 SECRET_KEY = os.getenv("SECRET_KEY", "change-me")
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost").split(",") if host.strip()]
-CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if origin.strip()]
+ALLOWED_HOSTS = _merge_unique(DEFAULT_ALLOWED_HOSTS + _split_env_list(os.getenv("ALLOWED_HOSTS", "")))
+CSRF_TRUSTED_ORIGINS = _merge_unique(
+    DEFAULT_CSRF_TRUSTED_ORIGINS + _split_env_list(os.getenv("CSRF_TRUSTED_ORIGINS", ""))
+)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
@@ -104,5 +131,11 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
-GRAFANA_EMBED_URL = os.getenv("GRAFANA_EMBED_URL", "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1&kiosk")
-GRAFANA_DASHBOARD_URL = os.getenv("GRAFANA_DASHBOARD_URL", "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1")
+GRAFANA_EMBED_URL = os.getenv(
+    "GRAFANA_EMBED_URL",
+    "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1&kiosk",
+)
+GRAFANA_DASHBOARD_URL = os.getenv(
+    "GRAFANA_DASHBOARD_URL",
+    "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1",
+)
