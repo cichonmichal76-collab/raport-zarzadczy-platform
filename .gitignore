@@ -1,14 +1,56 @@
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.sqlite3
-*.log
-.env
+*.py[cod]
+*$py.class
+
+# Virtualenv
 .venv/
 venv/
-node_modules/
-staticfiles/
+env/
+
+# Django / app runtime
+*.log
+*.sqlite3
+db.sqlite3
 media/
+staticfiles/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Backups / dumps
 backups/
+*.bak
+*.backup
+*.dump
+*.sql
+
+# OS / editors
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
+
+# Node / frontend tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local certs / keys
+*.pem
+*.key
+*.crt
+
+# Docker overrides
+docker-compose.override.yml
