@@ -14,30 +14,41 @@
   #header { display: none; }
   #container {
     min-width: 0;
+    padding-top: 64px;
   }
   #content-main {
     margin: 0;
   }
   #nav-sidebar {
-    left: auto;
-    position: static;
-    width: auto;
-    top: auto;
-    height: auto;
-    border-right: none;
+    display: none !important;
   }
   #content {
-    padding: 0;
-    margin: 0;
+    box-sizing: border-box;
+    margin: 0 0 0 240px;
+    padding: 24px 32px;
+    width: auto;
   }
   .app-admin-main {
     min-width: 0;
   }
-  .admin-layout {
-    padding-top: 64px;
-  }
   .admin-content {
     padding: 24px 32px;
+  }
+  #toggle-nav-sidebar {
+    display: none !important;
+  }
+  body.app-admin-shell.change-list #content,
+  body.app-admin-shell.change-form #content {
+    max-width: none;
+  }
+  @media (max-width: 1024px) {
+    #container {
+      padding-top: 0;
+    }
+    #content {
+      margin-left: 0;
+      padding: 20px;
+    }
   }
 </style>
 {% endblock %}
@@ -47,15 +58,13 @@
 {% block bodyclass %}{{ block.super }} app-admin-shell{% endblock %}
 {% block nav-sidebar %}{% endblock %}
 
-{% block content %}
+{% block header %}
   {% include "includes/app_topbar.html" with topbar_class="topbar app-topbar" topbar_left_class="topbar-side topbar-side-left" topbar_center_class="topbar-center" topbar_title_class="topbar-title" topbar_right_class="topbar-side topbar-side-right" topbar_logo_link_class="topbar-logo-link" topbar_logo_class="topbar-logo" topbar_user_class="topbar-user" topbar_form_class="topbar-form" topbar_button_class="topbar-btn" %}
+  {% include "includes/app_sidebar.html" with sidebar_class="sidebar admin-sidebar" %}
+{% endblock %}
 
-  <div class="layout admin-layout">
-    {% include "includes/app_sidebar.html" with sidebar_class="sidebar admin-sidebar" %}
-    <main class="content admin-content">
-      {% block admin_shell_main %}
-        {{ block.super }}
-      {% endblock %}
-    </main>
-  </div>
+{% block content %}
+  {% block admin_shell_main %}
+    {{ block.super }}
+  {% endblock %}
 {% endblock %}

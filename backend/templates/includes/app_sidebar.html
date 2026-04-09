@@ -19,6 +19,16 @@
         <a href="/rnd/" {% if request.path == "/rnd/" %}class="is-current"{% endif %}>B+R</a>
       </div>
     </details>
-    <a href="/admin/" {% if "/admin/" in request.path %}class="is-current"{% endif %}>Admin</a>
+    <details class="sidebar-group" {% if "/admin/" in request.path %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if '/admin/' in request.path %} is-current{% endif %}">Administracja</summary>
+      <div class="sidebar-subnav">
+        <a href="/admin/accounts/user/" {% if request.path == "/admin/accounts/user/" %}class="is-current"{% endif %}>Uzytkownicy</a>
+        <a href="/admin/reports/reportingperiod/" {% if request.path == "/admin/reports/reportingperiod/" %}class="is-current"{% endif %}>Okresy raportowe</a>
+        <a href="/admin/imports/uploadbatch/" {% if request.path == "/admin/imports/uploadbatch/" %}class="is-current"{% endif %}>Historia importow</a>
+        <a href="/admin/reports/productionrecord/" {% if request.path == "/admin/reports/productionrecord/" %}class="is-current"{% endif %}>Rekordy produkcji</a>
+        <a href="/admin/reports/rndrecord/" {% if request.path == "/admin/reports/rndrecord/" %}class="is-current"{% endif %}>Rekordy B+R</a>
+        <a href="/admin/" {% if request.path == "/admin/" %}class="is-current"{% endif %}>Django Admin</a>
+      </div>
+    </details>
   </nav>
 </aside>
