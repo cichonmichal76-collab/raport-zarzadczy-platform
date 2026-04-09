@@ -3,7 +3,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    platform: linux/arm64
     command: ./entrypoint-web.sh
     env_file:
       - .env
@@ -28,7 +27,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    platform: linux/arm64
     command: celery -A config worker -l info --concurrency=1 --pool=solo
     env_file:
       - .env
@@ -50,7 +48,6 @@ services:
 
   db:
     image: postgres:16
-    platform: linux/arm64
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -67,7 +64,6 @@ services:
 
   redis:
     image: redis:7
-    platform: linux/arm64
     command: redis-server --save 60 1 --loglevel warning
     restart: unless-stopped
     healthcheck:
@@ -78,7 +74,6 @@ services:
 
   backup:
     image: postgres:16
-    platform: linux/arm64
     env_file:
       - .env
     volumes:
@@ -94,7 +89,6 @@ services:
 
   nginx:
     image: nginx:1.27
-    platform: linux/arm64
     ports:
       - "80:80"
       - "443:443"
@@ -116,7 +110,6 @@ services:
 
   grafana:
     image: grafana/grafana:11.2.0
-    platform: linux/arm64
     env_file:
       - .env
     environment:
