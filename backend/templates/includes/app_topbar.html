@@ -5,9 +5,45 @@
       <img src="https://www.elektromed.pl/media/cache/optimize/build/images/logo.a89f3274.png" alt="Elektro Med" class="{% if topbar_logo_class %}{{ topbar_logo_class }}{% else %}topbar-logo{% endif %}">
     </div>
   </div>
-
-  <div class="{% if topbar_center_class %}{{ topbar_center_class }}{% else %}topbar-center{% endif %}"></div>
-
+  <div class="{% if topbar_center_class %}{{ topbar_center_class }}{% else %}topbar-center{% endif %}">
+    {% if is_auth and prodio_sync %}
+    <div class="topbar-sync-cluster">
+      <div class="topbar-control-block">
+        <span class="topbar-control-label">Sync Prodio</span>
+        <form method="post" action="{% url 'prodio-sync-control' %}" class="topbar-inline-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="toggle_sync">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="topbar-switch topbar-switch-sync {% if prodio_sync.enabled %}is-on{% else %}is-off{% endif %}">
+            <span class="topbar-switch-thumb" aria-hidden="true"></span>
+            <span class="topbar-switch-label">{% if prodio_sync.enabled %}ON{% else %}OFF{% endif %}</span>
+          </button>
+        </form>
+      </div>
+      <div class="topbar-control-block">
+        <span class="topbar-control-label">Interwal</span>
+        <form method="post" action="{% url 'prodio-sync-control' %}" class="topbar-inline-form topbar-interval-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="set_interval">
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button type="submit" class="production-refresh-btn {% if prodio_sync.interval_minutes == 1 %}is-current{% endif %}" name="interval_minutes" value="1">1 min</button>
+          <button type="submit" class="production-refresh-btn {% if prodio_sync.interval_minutes == 10 %}is-current{% endif %}" name="interval_minutes" value="10">10 min</button>
+          <button type="submit" class="production-refresh-btn {% if prodio_sync.interval_minutes == 60 %}is-current{% endif %}" name="interval_minutes" value="60">1 h</button>
+        </form>
+      </div>
+      <div class="topbar-control-block topbar-sync-meta">
+        <span class="topbar-control-label">Ostatni sync</span>
+        <span class="topbar-sync-timestamp {% if prodio_sync.last_status == 'success' %}is-success{% elif prodio_sync.last_status == 'error' %}is-error{% else %}is-neutral{% endif %}">
+          {% if prodio_sync.last_finished_at %}
+            {{ prodio_sync.last_finished_at|date:"Y-m-d H:i" }}
+          {% else %}
+            brak
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
   <div class="{% if topbar_right_class %}{{ topbar_right_class }}{% else %}topbar-side topbar-side-right{% endif %}">
     <div class="topbar-control-block topbar-theme-block">
       <span class="topbar-control-label">Tryb</span>
@@ -21,10 +57,11 @@
       Zalogowany: <strong>{{ request.user.display_name|default:request.user.username }}</strong>
     </div>
     <form method="post" action="{% url 'logout' %}" class="{% if topbar_form_class %}{{ topbar_form_class }}{% else %}topbar-form{% endif %}">
-      {% csrf_token %}
+        {% csrf_token %}
       <button type="submit" class="{% if topbar_button_class %}{{ topbar_button_class }}{% else %}topbar-btn{% endif %}">Wyloguj</button>
     </form>
     {% else %}
+    <div class="{% if topbar_user_class %}{{ topbar_user_class }}{% else %}topbar-user{% endif %}">Uzytkownik niezalogowany</div>
     <a href="{% url 'login' %}" class="{% if topbar_button_class %}{{ topbar_button_class }}{% else %}topbar-btn topbar-link{% endif %}">Zaloguj</a>
     {% endif %}
   </div>
@@ -35,14 +72,14 @@
     window.__raportThemeInit = true;
 
     function preferredTheme() {
-      var stored = window.localStorage.getItem("raport-theme");
+      const stored = window.localStorage.getItem("raport-theme");
       if (stored === "light" || stored === "dark") return stored;
       return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
 
     function applyQueryTheme(urlValue, theme) {
       try {
-        var url = new URL(urlValue, window.location.origin);
+        const url = new URL(urlValue, window.location.origin);
         url.searchParams.set("theme", theme === "dark" ? "dark" : "light");
         if (url.origin === window.location.origin) {
           return url.pathname + url.search + url.hash;
@@ -55,14 +92,14 @@
 
     function syncGrafanaTargets(theme) {
       document.querySelectorAll("[data-grafana-src]").forEach(function (node) {
-        var baseValue = node.dataset.baseSrc || node.getAttribute("src") || "";
+        const baseValue = node.dataset.baseSrc || node.getAttribute("src") || "";
         if (!node.dataset.baseSrc) node.dataset.baseSrc = baseValue;
         node.setAttribute("src", applyQueryTheme(baseValue, theme));
       });
 
       document.querySelectorAll("[data-chart-src]").forEach(function (node) {
-        var chartBase = node.dataset.baseChartSrc || node.dataset.chartSrc || "";
-        var tableBase = node.dataset.baseTableSrc || node.dataset.tableSrc || "";
+        const chartBase = node.dataset.baseChartSrc || node.dataset.chartSrc || "";
+        const tableBase = node.dataset.baseTableSrc || node.dataset.tableSrc || "";
         if (!node.dataset.baseChartSrc) node.dataset.baseChartSrc = chartBase;
         if (!node.dataset.baseTableSrc) node.dataset.baseTableSrc = tableBase;
         node.dataset.chartSrc = applyQueryTheme(chartBase, theme);
@@ -70,7 +107,7 @@
       });
 
       document.querySelectorAll("[data-grafana-href]").forEach(function (node) {
-        var baseValue = node.dataset.baseHref || node.getAttribute("href") || "";
+        const baseValue = node.dataset.baseHref || node.getAttribute("href") || "";
         if (!node.dataset.baseHref) node.dataset.baseHref = baseValue;
         node.setAttribute("href", applyQueryTheme(baseValue, theme));
       });
@@ -81,10 +118,11 @@
         node.dataset.themeState = theme;
         node.classList.toggle("is-on", theme === "dark");
         node.classList.toggle("is-off", theme !== "dark");
-        var label = node.querySelector(".topbar-switch-label");
+        const label = node.querySelector(".topbar-switch-label");
         if (label) {
           label.textContent = theme === "dark" ? "☾" : "☀";
         }
+        node.setAttribute("aria-label", theme === "dark" ? "Przelacz na tryb jasny" : "Przelacz na tryb ciemny");
       });
     }
 
@@ -96,10 +134,10 @@
     }
 
     document.addEventListener("click", function (event) {
-      var toggle = event.target.closest("[data-theme-toggle]");
+      const toggle = event.target.closest("[data-theme-toggle]");
       if (!toggle) return;
-      var current = document.documentElement.getAttribute("data-theme") || preferredTheme();
-      var next = current === "dark" ? "light" : "dark";
+      const current = document.documentElement.getAttribute("data-theme") || preferredTheme();
+      const next = current === "dark" ? "light" : "dark";
       window.localStorage.setItem("raport-theme", next);
       applyTheme(next);
     });
