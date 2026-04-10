@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synchronizacja danych</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="login-sync-page">
+  <main class="login-sync-shell">
+    <section class="panel login-sync-panel">
+      <div class="panel-heading">
+        <h3>Synchronizacja danych po logowaniu</h3>
+        <p>Pobieramy najnowsze dane z Prodio, aby pokazac aktualny widok po zalogowaniu.</p>
+      </div>
+      <div class="login-sync-state" data-login-sync-state>
+        Trwa wymuszona synchronizacja. To okno zamknie sie automatycznie po zakonczeniu.
+      </div>
+      <div class="login-sync-hourglass" data-login-sync-hourglass hidden aria-hidden="true">
+        <div class="login-sync-hourglass-icon">
+          <span class="login-sync-hourglass-top"></span>
+          <span class="login-sync-hourglass-neck"></span>
+          <span class="login-sync-hourglass-bottom"></span>
+        </div>
+        <span class="login-sync-hourglass-label">Synchronizacja trwa dluzej. Prosze chwilke poczekac.</span>
+      </div>
+      <div class="login-sync-actions">
+        <a class="topbar-link login-sync-continue" href="{{ redirect_to }}">Wejdz teraz</a>
+      </div>
+    </section>
+  </main>
+  {{ redirect_to|json_script:"login-sync-target" }}
+  <script>
+    (function () {
+      var targetNode = document.getElementById("login-sync-target");
+      var fallbackTarget = targetNode ? JSON.parse(targetNode.textContent) : "/";
+      var statusNode = document.querySelector("[data-login-sync-state]");
+      var hourglassNode = document.querySelector("[data-login-sync-hourglass]");
+      var hourglassTimer = window.setTimeout(function () {
+        if (hourglassNode) {
+          hourglassNode.hidden = false;
+          hourglassNode.setAttribute("aria-hidden", "false");
+        }
+      }, 5000);
+
+      function poll() {
+        fetch("/login-sync-status/", { credentials: "same-origin" })
+          .then(function (response) { return response.json(); })
+          .then(function (data) {
+            if (data.ready) {
+              window.clearTimeout(hourglassTimer);
+              window.location.href = data.redirect_to || fallbackTarget;
+              return;
+            }
+            if (statusNode) {
+              if (data.is_running) {
+                statusNode.textContent = "Synchronizacja trwa. Za chwile nastapi przekierowanie.";
+              } else if (data.last_status === "error") {
+                statusNode.textContent = "Ostatnia proba synchronizacji zakonczyla sie bledem. System ponowi probe automatycznie.";
+              } else {
+                statusNode.textContent = "Oczekiwanie na uruchomienie synchronizacji...";
+              }
+            }
+            window.setTimeout(poll, 3000);
+          })
+          .catch(function () {
+            window.setTimeout(poll, 5000);
+          });
+      }
+
+      window.setTimeout(poll, 1500);
+    })();
+  </script>
+</body>
+</html>
