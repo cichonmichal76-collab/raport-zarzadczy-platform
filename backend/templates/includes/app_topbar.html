@@ -49,7 +49,7 @@
       <span class="topbar-control-label">Tryb</span>
       <button type="button" class="topbar-switch topbar-switch-theme" data-theme-toggle data-theme-state="light">
         <span class="topbar-switch-thumb" aria-hidden="true"></span>
-        <span class="topbar-switch-label">☀</span>
+        <span class="topbar-switch-label">&#9728;</span>
       </button>
     </div>
     {% if is_auth %}
@@ -120,7 +120,7 @@
         node.classList.toggle("is-off", theme !== "dark");
         const label = node.querySelector(".topbar-switch-label");
         if (label) {
-          label.textContent = theme === "dark" ? "☾" : "☀";
+          label.innerHTML = theme === "dark" ? "&#9681;" : "&#9728;";
         }
         node.setAttribute("aria-label", theme === "dark" ? "Przelacz na tryb jasny" : "Przelacz na tryb ciemny");
       });
