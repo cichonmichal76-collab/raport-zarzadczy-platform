@@ -1,6 +1,5 @@
 from collections import defaultdict
-from datetime import timedelta
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit, quote
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from django.conf import settings
 from django.contrib import messages
@@ -12,8 +11,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.utils.dateparse import parse_datetime
 from django.views import View
-from django.views.generic import TemplateView
-from django.utils import timezone
+from django.views.generic import RedirectView, TemplateView
 
 from accounts.models import User
 from accounts.permissions import RoleAccessMixin
@@ -27,7 +25,7 @@ BI_DASHBOARDS = {
         "label": "Dane",
         "title": "Przeglad danych",
         "description": "Najwazniejsze KPI, realizacja produkcji, obciazenie maszyn oraz wyjatki wymagajace decyzji.",
-        "source_label": "Zrodlo: Wewnetrzne",
+        "source_label": "Zrodlo: raporty Django / PostgreSQL",
         "embed_url": "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1&kiosk",
         "dashboard_url": "/grafana/d/raport-zarzadczy-zarzad/raport-zarzadczy-zarzad?orgId=1",
     },
@@ -36,7 +34,7 @@ BI_DASHBOARDS = {
         "label": "Produkcja",
         "title": "Przeglad produkcji",
         "description": "Realizacja planu, grupy produktowe, maszyny i zlecenia wymagajace interwencji na produkcji.",
-        "source_label": "Zrodlo: Wewnetrzne",
+        "source_label": "Zrodlo: dashboard produkcyjny / PostgreSQL po synchronizacji",
         "embed_url": "/grafana/d/raport-zarzadczy-produkcja/raport-zarzadczy-produkcja?orgId=1&kiosk",
         "dashboard_url": "/grafana/d/raport-zarzadczy-produkcja/raport-zarzadczy-produkcja?orgId=1",
     },
@@ -45,7 +43,7 @@ BI_DASHBOARDS = {
         "label": "Prodio",
         "title": "Zlecenia z Prodio",
         "description": "Otwarte zlecenia produkcyjne pobrane z API Prodio i zapisane w bazie raportowej.",
-        "source_label": "Zrodlo: Prodio",
+        "source_label": "Zrodlo: Prodio sync -> PostgreSQL",
         "embed_url": "/grafana/d/afik9bhsvh7nkb/zlecenia-z-prodio-otwarte?orgId=1&kiosk",
         "dashboard_url": "/grafana/d/afik9bhsvh7nkb/zlecenia-z-prodio-otwarte?orgId=1",
     },
@@ -54,7 +52,7 @@ BI_DASHBOARDS = {
         "label": "Operacje Prodio",
         "title": "Prodio - produkcja operacyjna",
         "description": "Operacje na stanowiskach, praca operatorow, postep wykonania i stany produktow z API Prodio.",
-        "source_label": "Zrodlo: Prodio",
+        "source_label": "Zrodlo: raw Prodio API -> widoki SQL",
         "embed_url": "/grafana/d/prodio-produkcja-operacje/prodio-produkcja-operacyjna?orgId=1&kiosk",
         "dashboard_url": "/grafana/d/prodio-produkcja-operacje/prodio-produkcja-operacyjna?orgId=1",
     },
@@ -63,25 +61,25 @@ BI_DASHBOARDS = {
         "label": "B+R",
         "title": "Przeglad B+R",
         "description": "Statusy projektow, poziomy TRL, typy prac oraz blokery i tematy wymagajace decyzji.",
-        "source_label": "Zrodlo: Wewnetrzne",
+        "source_label": "Zrodlo: raporty B+R Django / PostgreSQL",
         "embed_url": "/grafana/d/raport-zarzadczy-br/raport-zarzadczy-br?orgId=1&kiosk",
         "dashboard_url": "/grafana/d/raport-zarzadczy-br/raport-zarzadczy-br?orgId=1",
     },
 }
 
 
-BI_ACCESS_BY_DEPARTMENT = {
-    User.Department.MANAGEMENT: ("zarzad",),
-    User.Department.PRODUCTION: ("produkcja", "prodio", "prodio_ops"),
-    User.Department.RND: ("br",),
+BI_ACCESS_BY_ROLE = {
+    User.Role.ADMIN: ("zarzad", "produkcja", "prodio", "prodio_ops", "br"),
+    User.Role.MANAGEMENT: ("zarzad", "produkcja", "prodio", "prodio_ops", "br"),
+    User.Role.PROD_EDITOR: ("produkcja", "prodio", "prodio_ops"),
+    User.Role.RND_EDITOR: ("br",),
 }
 
 
 def allowed_bi_keys(user):
-    if user.is_superuser or getattr(user, "is_program_admin", False):
+    if user.is_superuser:
         return ("zarzad", "produkcja", "prodio", "prodio_ops", "br")
-    department = getattr(user, "effective_department", User.Department.MANAGEMENT)
-    return BI_ACCESS_BY_DEPARTMENT.get(department, ())
+    return BI_ACCESS_BY_ROLE.get(user.role, ())
 
 
 def embed_url_for_user(url, user):
@@ -113,14 +111,13 @@ def grafana_refresh_label(minutes):
 
 
 def landing_url_for_user(user):
-    if user.is_superuser or getattr(user, "is_program_admin", False):
+    if user.is_superuser or user.role in {User.Role.ADMIN, User.Role.MANAGEMENT}:
         return None
-    department = getattr(user, "effective_department", User.Department.MANAGEMENT)
-    if department == User.Department.PRODUCTION:
+    if user.role == User.Role.PROD_EDITOR:
         return "/production/"
-    if department == User.Department.RND:
+    if user.role == User.Role.RND_EDITOR:
         return "/bi/?tab=br"
-    return None
+    return "/bi/"
 
 
 def _parse_hours(value):
@@ -141,28 +138,6 @@ def _parse_hours(value):
 
 def _round_hours(value):
     return round(value, 2)
-
-
-WORKERS_TODAY_MODES = {
-    "start": {
-        "label": "Wejscie dzis",
-        "description": "Pracownicy, ktorzy rozpoczeli prace dzisiaj wedlug godziny wejscia.",
-        "where_sql": "start_time::date = CURRENT_DATE",
-        "empty_text": "Brak zarejestrowanych wejsc na dzis.",
-    },
-    "stop": {
-        "label": "Wyjscie dzis",
-        "description": "Pracownicy, ktorzy zakonczyli prace dzisiaj wedlug godziny wyjscia.",
-        "where_sql": "stop_time::date = CURRENT_DATE",
-        "empty_text": "Brak zarejestrowanych wyjsc na dzis.",
-    },
-    "activity": {
-        "label": "Aktywnosc dzis",
-        "description": "Pracownicy, dla ktorych dzisiejsza aktywnosc wynika z wejscia lub wyjscia w biezacym dniu.",
-        "where_sql": "COALESCE(stop_time, start_time)::date = CURRENT_DATE",
-        "empty_text": "Brak dzisiejszej aktywnosci pracownikow.",
-    },
-}
 
 
 def _exception_bucket(record):
@@ -341,13 +316,9 @@ class ProductionView(LoginRequiredMixin, RoleAccessMixin, ActivePeriodMixin, Pag
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         sync = ProdioSyncSettings.get_solo()
-        workers_mode = self.request.GET.get("workers_mode", "start").strip().lower()
-        if workers_mode not in WORKERS_TODAY_MODES:
-            workers_mode = "start"
-        workers_mode_config = WORKERS_TODAY_MODES[workers_mode]
         with connection.cursor() as cursor:
             cursor.execute(
-                f"""
+                """
                 SELECT
                     worker_full_name,
                     MIN(start_time) AS first_entry,
@@ -356,7 +327,7 @@ class ProductionView(LoginRequiredMixin, RoleAccessMixin, ActivePeriodMixin, Pag
                     ROUND(COALESCE(SUM(work_minutes), 0) / 60.0, 2) AS worked_hours,
                     COUNT(DISTINCT operation_id) AS operations_count
                 FROM reports_grafana_prodio_work_logs
-                WHERE {workers_mode_config["where_sql"]}
+                WHERE start_time::date = CURRENT_DATE
                 GROUP BY worker_full_name
                 ORDER BY first_entry ASC, worker_full_name ASC;
                 """
@@ -431,30 +402,13 @@ class ProductionView(LoginRequiredMixin, RoleAccessMixin, ActivePeriodMixin, Pag
                 for row in cursor.fetchall()
             ]
 
-            cursor.execute(
-                """
-                SELECT COUNT(DISTINCT COALESCE(machine_name, 'Bez stanowiska'))
-                FROM reports_grafana_prodio_operations;
-                """
-            )
-            total_machines = cursor.fetchone()[0] or 0
-
         ctx["workers_today"] = worker_rows
-        ctx["workers_today_mode"] = workers_mode
-        ctx["workers_today_mode_label"] = workers_mode_config["label"]
-        ctx["workers_today_description"] = workers_mode_config["description"]
-        ctx["workers_today_empty_text"] = workers_mode_config["empty_text"]
-        ctx["workers_today_modes"] = [
-            {"key": key, "label": value["label"], "is_current": key == workers_mode}
-            for key, value in WORKERS_TODAY_MODES.items()
-        ]
         ctx["machines_today"] = machine_rows
         ctx["today_orders"] = today_orders
         ctx["kpi_workers_today"] = len(worker_rows)
         ctx["kpi_active_now"] = sum(1 for row in worker_rows if row["active_now"])
         ctx["kpi_orders_today"] = sum(row["orders_count"] for row in machine_rows)
         ctx["kpi_machines_today"] = len(machine_rows)
-        ctx["kpi_machines_total"] = total_machines
         ctx["production_chart_title"] = "Godziny pracy dzisiaj wg pracownika"
         ctx["production_chart_description"] = "Dolny panel Grafany pokazuje tylko dzisiejsze wpisy czasu pracy, bez historycznej tabeli."
         chart_url = embed_url_for_user(
@@ -526,8 +480,6 @@ class LoginSyncWaitView(LoginRequiredMixin, TemplateView):
 
 
 class LoginSyncStatusView(LoginRequiredMixin, View):
-    LOGIN_SYNC_MAX_WAIT_SECONDS = 120
-
     def get(self, request, *args, **kwargs):
         requested_iso = request.session.get("login_sync_requested_at")
         redirect_to = request.session.get("login_sync_redirect_to") or landing_url_for_user(request.user) or "/"
@@ -536,19 +488,10 @@ class LoginSyncStatusView(LoginRequiredMixin, View):
 
         requested_at = parse_datetime(requested_iso)
         sync = ProdioSyncSettings.get_solo()
-        sync.recover_stale_running()
         ready = False
         status = sync.last_status or "never"
-        timed_out = False
-        can_continue = False
         if requested_at and sync.last_finished_at and sync.last_finished_at >= requested_at:
             ready = True
-        elif requested_at:
-            timeout_at = requested_at + timedelta(seconds=self.LOGIN_SYNC_MAX_WAIT_SECONDS)
-            if timezone.now() >= timeout_at:
-                timed_out = True
-                can_continue = True
-                ready = True
 
         if ready:
             request.session.pop("login_sync_requested_at", None)
@@ -561,10 +504,19 @@ class LoginSyncStatusView(LoginRequiredMixin, View):
                 "last_status": status,
                 "last_finished_at": sync.last_finished_at.isoformat() if sync.last_finished_at else None,
                 "is_running": sync.is_running(),
-                "timed_out": timed_out,
-                "can_continue": can_continue,
             }
         )
+
+
+class FullGrafanaView(LoginRequiredMixin, RoleAccessMixin, TemplateView):
+    template_name = "reports/grafana_full.html"
+    allowed_roles = (User.Role.ADMIN, User.Role.MANAGEMENT)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        grafana_full_url = getattr(settings, "GRAFANA_DASHBOARD_URL", "/grafana/")
+        ctx["grafana_full_url"] = append_query_params(grafana_full_url, kiosk="")
+        return ctx
 
 
 class RnDView(LoginRequiredMixin, RoleAccessMixin, ActivePeriodMixin, PaginationMixin, TemplateView):
@@ -608,18 +560,4 @@ class BiReportsView(LoginRequiredMixin, RoleAccessMixin, TemplateView):
         ctx["grafana_embed_url"] = embed_url_for_user(selected["embed_url"], self.request.user)
         ctx["grafana_dashboard_url"] = selected["dashboard_url"]
         ctx["available_bi_dashboards"] = [BI_DASHBOARDS[key] for key in allowed_keys]
-        return ctx
-
-
-class FullGrafanaView(LoginRequiredMixin, RoleAccessMixin, TemplateView):
-    template_name = "reports/grafana_full.html"
-    allowed_roles = (User.Role.ADMIN,)
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        query_string = self.request.META.get("QUERY_STRING", "")
-        grafana_src = "/grafana/"
-        if query_string:
-            grafana_src = f"{grafana_src}?{quote(query_string, safe='=&')}"
-        ctx["grafana_full_url"] = grafana_src
         return ctx

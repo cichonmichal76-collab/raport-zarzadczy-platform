@@ -1,5 +1,15 @@
 from django.urls import path
-from .views import BiReportsView, DashboardView, FullGrafanaView, LoginSyncStatusView, LoginSyncWaitView, ProdioSyncControlView, ProductionView, RnDView
+
+from .views import (
+    BiReportsView,
+    DashboardView,
+    FullGrafanaView,
+    LoginSyncStatusView,
+    LoginSyncWaitView,
+    ProdioSyncControlView,
+    ProductionView,
+    RnDView,
+)
 
 urlpatterns = [
     path("", DashboardView.as_view(), name="dashboard"),

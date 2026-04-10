@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Pelna Grafana{% endblock %}
+{% block content %}
+<div class="dashboard-header">
+  <div>
+    <h2>Pelna Grafana</h2>
+    <p>Pelny interfejs Grafany osadzony w aplikacji z bocznym sidebarem Django.</p>
+  </div>
+</div>
+
+<section class="panel grafana-full-panel">
+  <div class="grafana-embed-shell grafana-full-shell">
+    <iframe
+      src="{{ grafana_full_url }}"
+      class="grafana-embed grafana-full-embed"
+      title="Pelna Grafana"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+  </div>
+</section>
+{% endblock %}

@@ -4,20 +4,159 @@
 <div class="dashboard-header">
   <div>
     <h2>Dashboard zarzadczy</h2>
-    <p>Glowny ekran programu z osadzonym dashboardem Grafany. Aktywny okres: {{ period|default:"brak aktywnego okresu" }}</p>
+    <p>U gory raport Django z najwazniejszymi danymi, a nizej panel Grafany z widokiem administratora.</p>
   </div>
+  {% if request.user.is_superuser or request.user.role == "admin" %}
   <div class="bi-actions">
     <a href="{{ grafana_dashboard_url }}" data-grafana-href target="_blank" rel="noopener noreferrer" class="topbar-link">Edytuj w Grafanie</a>
   </div>
+  {% endif %}
 </div>
 
-<section class="panel bi-panel">
+<section class="kpi-grid">
+  <article class="kpi-card">
+    <span class="kpi-label">Zlecenia</span>
+    <span class="kpi-value">{{ kpi_total_orders }}</span>
+    <span class="kpi-sub">Aktywny okres: {{ period|default:"brak" }}</span>
+  </article>
+  <article class="kpi-card kpi-good">
+    <span class="kpi-label">Gotowe</span>
+    <span class="kpi-value">{{ kpi_ready_pct }}%</span>
+    <span class="kpi-sub">{{ kpi_completed_units }} wykonanych sztuk</span>
+  </article>
+  <article class="kpi-card">
+    <span class="kpi-label">Realizacja</span>
+    <span class="kpi-value">{{ kpi_execution_pct }}%</span>
+    <span class="kpi-sub">Wykonanie do planu</span>
+  </article>
+  <article class="kpi-card">
+    <span class="kpi-label">Czas pracy</span>
+    <span class="kpi-value">{{ kpi_actual_hours }}</span>
+    <span class="kpi-sub">Godziny rzeczywiste</span>
+  </article>
+  <article class="kpi-card">
+    <span class="kpi-label">Norma</span>
+    <span class="kpi-value">{{ kpi_norm_hours }}</span>
+    <span class="kpi-sub">Godziny planowane</span>
+  </article>
+  <article class="kpi-card {% if kpi_time_delta > 0 %}kpi-alert{% else %}kpi-good{% endif %}">
+    <span class="kpi-label">Odchylenie</span>
+    <span class="kpi-value">{{ kpi_time_delta }}</span>
+    <span class="kpi-sub">Rzeczywisty czas minus norma</span>
+  </article>
+</section>
+
+<section class="dashboard-main">
+  <div class="dashboard-left">
+    <div class="comparison-grid">
+      <article class="panel chart-panel chart-panel-small">
+        <div class="panel-heading">
+          <h3>Statusy produkcji</h3>
+          <p>Liczba zlecen w podziale na aktualny status.</p>
+        </div>
+        <div class="chart-box" id="chart-production-status"></div>
+      </article>
+
+      <article class="panel chart-panel">
+        <div class="panel-heading">
+          <h3>Grupy produktowe</h3>
+          <p>Porownanie planu i wykonania dla grup produktowych.</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Grupa</th>
+              <th>Wykonano</th>
+              <th>Plan</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in product_group_rows %}
+            <tr>
+              <td><strong>{{ item.group }}</strong></td>
+              <td>{{ item.completed }}</td>
+              <td>{{ item.planned }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3">Brak danych dla grup produktowych.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+
+      <article class="panel chart-panel chart-panel-wide">
+        <div class="panel-heading">
+          <h3>Maszyny i czas pracy</h3>
+          <p>Zestawienie czasu rzeczywistego i normy dla stanowisk.</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Maszyna</th>
+              <th>Czas rzeczywisty</th>
+              <th>Norma</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in machine_rows %}
+            <tr>
+              <td><strong>{{ item.machine }}</strong></td>
+              <td>{{ item.actual }}</td>
+              <td>{{ item.norm }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="3">Brak danych maszynowych.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+    </div>
+  </div>
+
+  <aside class="dashboard-right">
+    <article class="panel exception-panel">
+      <div class="panel-heading">
+        <h3>Tematy wymagajace uwagi</h3>
+        <p>Najwazniejsze wyjatki i odchylenia z raportu Django.</p>
+      </div>
+      <div class="exception-groups">
+        {% for group in exception_groups %}
+        <section class="exception-group">
+          <div class="exception-group-head">
+            <strong>{{ group.title }}</strong>
+            <span>{{ group.count }}</span>
+          </div>
+          {% if group.items %}
+          <ul class="exception-list">
+            {% for item in group.items %}
+            <li>
+              <div class="exception-order">{{ item.order_number }} - {{ item.product }}</div>
+              <div class="exception-detail">{{ item.detail }}</div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="exception-empty">Brak pozycji w tej kategorii.</p>
+          {% endif %}
+        </section>
+        {% endfor %}
+      </div>
+    </article>
+  </aside>
+</section>
+
+<section class="panel bi-panel bi-panel-embedded">
   <div class="panel-heading">
     <h3>{{ selected_bi.title }}</h3>
     <p>{{ selected_bi.description }}</p>
   </div>
+  <div class="bi-source-chip">{{ selected_bi.source_label }}</div>
   <div class="bi-note">
-    To jest domyslny ekran startowy programu. Pelna edycja dashboardu i pozostale widoki pozostaja dostepne w Grafanie.
+    Dolny panel pozostaje osadzony z Grafany i moze byc niezaleznie rozwijany przez administratora.
   </div>
   <div class="grafana-embed-shell">
     <iframe
@@ -30,4 +169,43 @@
     </iframe>
   </div>
 </section>
+
+{{ production_statuses|json_script:"dashboard-production-status-data" }}
+<script>
+  (function () {
+    var dataNode = document.getElementById("dashboard-production-status-data");
+    var chartNode = document.getElementById("chart-production-status");
+    if (!dataNode || !chartNode || typeof echarts === "undefined") {
+      return;
+    }
+
+    var rawData = JSON.parse(dataNode.textContent || "[]");
+    if (!rawData.length) {
+      chartNode.innerHTML = "<p class='exception-empty'>Brak danych do wykresu statusow.</p>";
+      return;
+    }
+
+    var chart = echarts.init(chartNode);
+    chart.setOption({
+      animationDuration: 500,
+      tooltip: { trigger: "item" },
+      grid: { left: 12, right: 12, top: 18, bottom: 8, containLabel: true },
+      xAxis: {
+        type: "category",
+        data: rawData.map(function (item) { return item.status; }),
+        axisLabel: { interval: 0, rotate: 18 }
+      },
+      yAxis: { type: "value" },
+      series: [{
+        type: "bar",
+        data: rawData.map(function (item) { return item.total; }),
+        itemStyle: { color: "#a94f1e", borderRadius: [8, 8, 0, 0] }
+      }]
+    });
+
+    window.addEventListener("resize", function () {
+      chart.resize();
+    });
+  })();
+</script>
 {% endblock %}

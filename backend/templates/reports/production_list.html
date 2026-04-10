@@ -1,26 +1,193 @@
 {% extends "base.html" %}
-{% block title %}Produkcja{% endblock %}
+{% block title %}Panel produkcji{% endblock %}
 {% block content %}
-<h2>Produkcja</h2>
-<p>Okres: {{ period|default:"brak aktywnego okresu" }}</p>
-<table>
-  <thead>
-    <tr><th>Zlecenie</th><th>Status</th><th>Produkt</th><th>Stan obecny</th><th>Problem</th><th>Rozwiązanie</th></tr>
-  </thead>
-  <tbody>
-    {% for item in records %}
-    <tr>
-      <td>{{ item.order_number }}</td>
-      <td>{{ item.status }}</td>
-      <td>{{ item.product }}</td>
-      <td>{{ item.current_state|default:"-" }}</td>
-      <td>{{ item.problem|default:"-" }}</td>
-      <td>{{ item.solution|default:"-" }}</td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="6">Brak danych.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% include "includes/pagination.html" with page_obj=page_obj page_param="page" %}
+<div class="dashboard-header">
+  <div>
+    <h2>Panel produkcji</h2>
+    <p>U gory widok operacyjny Django, a nizej wybrany wykres z Grafany.</p>
+  </div>
+</div>
+
+<section class="kpi-grid production-kpi-grid">
+  <article class="kpi-card">
+    <span class="kpi-label">Pracownicy dzisiaj</span>
+    <span class="kpi-value">{{ kpi_workers_today }}</span>
+    <span class="kpi-sub">Osoby zarejestrowane na zmianie</span>
+  </article>
+  <article class="kpi-card kpi-good">
+    <span class="kpi-label">Aktywni teraz</span>
+    <span class="kpi-value">{{ kpi_active_now }}</span>
+    <span class="kpi-sub">Bez zarejestrowanego wyjscia</span>
+  </article>
+  <article class="kpi-card">
+    <span class="kpi-label">Zlecenia na dzisiaj</span>
+    <span class="kpi-value">{{ kpi_orders_today }}</span>
+    <span class="kpi-sub">Suma operacji przypisanych na dzis</span>
+  </article>
+  <article class="kpi-card">
+    <span class="kpi-label">Maszyny dzisiaj</span>
+    <span class="kpi-value">{{ kpi_machines_today }}</span>
+    <span class="kpi-sub">Stanowiska z dzisiejszym planem</span>
+  </article>
+</section>
+
+<section class="production-dashboard-grid">
+  <article class="panel">
+    <div class="panel-heading">
+      <h3>Pracownicy na zmianie dzisiaj</h3>
+      <p>Nazwiska, godzina wejscia i laczny zarejestrowany czas pracy.</p>
+    </div>
+    <div class="bi-source-chip">Zrodlo: Wewnetrzne / PostgreSQL</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Pracownik</th>
+          <th>Wejscie</th>
+          <th>Wyjscie</th>
+          <th>Status</th>
+          <th>Godziny pracy</th>
+          <th>Operacje</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in workers_today %}
+        <tr>
+          <td><strong>{{ item.worker_full_name }}</strong></td>
+          <td>{{ item.first_entry|date:"H:i" }}</td>
+          <td>{% if item.last_exit %}{{ item.last_exit|date:"H:i" }}{% else %}-{% endif %}</td>
+          <td>{% if item.active_now %}Na zmianie{% else %}Zakonczyl{% endif %}</td>
+          <td>{{ item.worked_hours }}</td>
+          <td>{{ item.operations_count }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">Brak zarejestrowanych wejsc na dzis.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+
+  <article class="panel">
+    <div class="panel-heading">
+      <h3>Zlecenia dzisiaj wg maszyn</h3>
+      <p>Ile zlecen przypada na kazde stanowisko oraz ile zostalo do wykonania.</p>
+    </div>
+    <div class="bi-source-chip">Zrodlo: Prodio sync -> PostgreSQL</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Maszyna</th>
+          <th>Zlecenia</th>
+          <th>Operacje</th>
+          <th>Plan</th>
+          <th>Wykonano</th>
+          <th>Pozostalo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in machines_today %}
+        <tr>
+          <td><strong>{{ item.machine_name }}</strong></td>
+          <td>{{ item.orders_count }}</td>
+          <td>{{ item.operation_steps }}</td>
+          <td>{{ item.planned_total }}</td>
+          <td>{{ item.done_total }}</td>
+          <td>{{ item.remaining_total }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">Brak zlecen z terminem na dzis.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+  <article class="panel production-orders-panel">
+    <div class="panel-heading">
+      <h3>Dzisiejsze zlecenia</h3>
+      <p>Szczegoly operacji z terminem na dzis, z podzialem na maszyny.</p>
+    </div>
+    <div class="bi-source-chip">Zrodlo: Prodio sync -> PostgreSQL</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operacja</th>
+          <th>Produkt</th>
+          <th>Maszyna</th>
+          <th>Status</th>
+          <th>Plan</th>
+          <th>Wykonano</th>
+          <th>Pozostalo</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in today_orders %}
+        <tr>
+          <td>{{ item.auto_order_id }}</td>
+          <td>{{ item.product_name }}</td>
+          <td>{{ item.machine_name }}</td>
+          <td>{{ item.status_label }}</td>
+          <td>{{ item.todo }}</td>
+          <td>{{ item.done }}</td>
+          <td>{{ item.remaining }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">Brak operacji zaplanowanych na dzis.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </article>
+</section>
+
+<section class="panel production-grafana-panel">
+  <div class="panel-heading">
+    <h3>{{ production_chart_title }}</h3>
+    <p>{{ production_chart_description }}</p>
+  </div>
+  <div class="production-grafana-mode-switch" data-grafana-mode-switch>
+    <button type="button" class="production-refresh-btn is-current" data-mode="chart">Wykres</button>
+    <button type="button" class="production-refresh-btn" data-mode="table">Tabela</button>
+  </div>
+  <div class="bi-source-chip">Zrodlo: raw Prodio API -> widoki SQL / Grafana</div>
+  <p class="bi-note">To jest osobny panel Grafany osadzony pod dedykowanym widokiem produkcji.</p>
+  <div class="grafana-embed-shell production-grafana-shell">
+    <iframe
+      class="grafana-embed production-grafana-embed"
+      src="{{ production_chart_embed_url }}"
+      data-chart-src="{{ production_chart_embed_url }}"
+      data-table-src="{{ production_table_embed_url }}"
+      data-production-mode-frame
+      title="{{ production_chart_title }}"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </div>
+  {% if request.user.is_superuser or request.user.role == "admin" %}
+  <div class="bi-actions production-grafana-actions">
+    <a class="topbar-link" href="{{ production_chart_dashboard_url }}" target="_blank" rel="noopener">Otworz w Grafanie</a>
+  </div>
+  {% endif %}
+</section>
+<script>
+  (function () {
+    var frame = document.querySelector("[data-production-mode-frame]");
+    var switchWrap = document.querySelector("[data-grafana-mode-switch]");
+    if (!frame || !switchWrap) {
+      return;
+    }
+    var buttons = switchWrap.querySelectorAll("[data-mode]");
+    buttons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        var mode = button.getAttribute("data-mode");
+        frame.src = mode === "table" ? frame.dataset.tableSrc : frame.dataset.chartSrc;
+        buttons.forEach(function (item) {
+          item.classList.toggle("is-current", item === button);
+        });
+      });
+    });
+  })();
+</script>
 {% endblock %}

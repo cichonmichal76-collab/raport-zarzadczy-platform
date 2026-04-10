@@ -4,20 +4,23 @@
 <div class="dashboard-header">
   <div>
     <h2>Raporty BI</h2>
-    <p>Przegladaj zarzadcze KPI w ukladzie programu. Pozostale dashboardy i pelna edycja pozostaja dostepne w Grafanie.</p>
+    <p>Przegladaj zarzadcze KPI w ukladzie przygotowanym przez administratora.</p>
   </div>
+  {% if request.user.is_superuser or request.user.role == "admin" %}
   <div class="bi-actions">
     <a href="{{ grafana_dashboard_url }}" data-grafana-href target="_blank" rel="noopener noreferrer" class="topbar-link">Edytuj w Grafanie</a>
   </div>
+  {% endif %}
 </div>
 
-<section class="panel bi-panel">
+<section class="panel bi-panel bi-panel-embedded">
   <div class="panel-heading">
     <h3>{{ selected_bi.title }}</h3>
     <p>{{ selected_bi.description }}</p>
   </div>
+  <div class="bi-source-chip">{{ selected_bi.source_label }}</div>
   <div class="bi-note">
-    Widok ponizej jest osadzony w programie. Jesli chcesz przejsc do pozostalych dashboardow albo zmienic wykresy, uklady lub zapytania, uzyj przycisku <strong>Edytuj w Grafanie</strong>.
+    Widok ponizej jest osadzony w programie i korzysta z panelu zdefiniowanego przez administratora.
   </div>
   <div class="grafana-embed-shell">
     <iframe

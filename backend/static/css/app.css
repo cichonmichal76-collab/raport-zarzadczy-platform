@@ -33,23 +33,17 @@ body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:#f6f2ec;color
 .sidebar{position:fixed;top:72px;left:0;bottom:0;width:240px;overflow-y:auto;background:#d7d3cd;color:#211b16;padding:24px;box-sizing:border-box}
 .sidebar h1{font-size:20px;margin:0 0 20px}
 .sidebar nav{display:grid;gap:10px}
-.sidebar a{display:block;color:#2f271f;text-decoration:none;padding:8px 10px;border-radius:10px;background:#f7f3ee;border:1px solid #c4bbb0;box-shadow:0 4px 10px rgba(73,59,46,.08)}
-.sidebar a:hover,.sidebar a:focus,.sidebar a.is-current{background:#ffffff;border-color:#9f9284;box-shadow:0 6px 14px rgba(73,59,46,.12)}
+.sidebar a{display:block;color:#3e352d;text-decoration:none;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.32)}
+.sidebar a:hover,.sidebar a:focus,.sidebar a.is-current{background:rgba(255,255,255,.6)}
 .sidebar-group{display:grid;gap:8px}
-.sidebar-group[open] .sidebar-group-toggle{background:#ffffff;border-color:#9f9284;box-shadow:0 6px 14px rgba(73,59,46,.12)}
-.sidebar-group-toggle{display:flex;align-items:center;justify-content:space-between;list-style:none;color:#2f271f;padding:8px 10px;border-radius:10px;background:#f7f3ee;border:1px solid #c4bbb0;cursor:pointer;font-weight:700;box-shadow:0 4px 10px rgba(73,59,46,.08)}
+.sidebar-group[open] .sidebar-group-toggle{background:rgba(255,255,255,.6)}
+.sidebar-group-toggle{display:flex;align-items:center;justify-content:space-between;list-style:none;color:#3e352d;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.32);cursor:pointer;font-weight:600}
 .sidebar-group-toggle::-webkit-details-marker{display:none}
 .sidebar-group-toggle::after{content:"+";font-weight:700;opacity:.8}
 .sidebar-group[open] .sidebar-group-toggle::after{content:"−"}
-.sidebar-group-toggle:hover,.sidebar-group-toggle:focus,.sidebar-group-toggle.is-current{background:#ffffff;border-color:#9f9284;box-shadow:0 6px 14px rgba(73,59,46,.12)}
+.sidebar-group-toggle:hover,.sidebar-group-toggle:focus,.sidebar-group-toggle.is-current{background:rgba(255,255,255,.6)}
 .sidebar-subnav{display:grid;gap:8px;padding-left:14px}
-.sidebar-subnav a{font-size:14px;padding:8px 10px;background:#efe8de;border-color:#c8bcac}
-.sidebar-item-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center}
-.sidebar-item-row a{min-width:0}
-.sidebar-start-form{margin:0}
-.sidebar-start-btn{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #c4bbb0;border-radius:10px;background:#f7f3ee;color:#8a7157;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 10px rgba(73,59,46,.08)}
-.sidebar-start-btn:hover,.sidebar-start-btn:focus{background:#ffffff;border-color:#9f9284;color:#5e4a36}
-.sidebar-start-btn.is-current{background:#1f6b35;border-color:#1f6b35;color:#fff}
+.sidebar-subnav a{font-size:14px;padding:8px 10px;background:rgba(255,255,255,.22)}
 .content{margin-left:240px;min-height:calc(100vh - 72px);padding:12px;box-sizing:border-box}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:20px 0}
 .card,.panel{background:#fff;border:1px solid #dccfbe;border-radius:14px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,.05)}
@@ -183,12 +177,9 @@ body[data-theme="dark"] .topbar-sync-timestamp.is-neutral{background:#171d23;bor
 body[data-theme="dark"] .sidebar h1,body[data-theme="dark"] .dashboard-header h2,body[data-theme="dark"] .panel-heading h3{color:#f5f7fa}
 body[data-theme="dark"] .topbar-user,body[data-theme="dark"] .dashboard-header p,body[data-theme="dark"] .panel-heading p,body[data-theme="dark"] .bi-note,body[data-theme="dark"] .pagination-summary{color:#b7c3cf}
 body[data-theme="dark"] .sidebar{background:#5d6268}
-body[data-theme="dark"] .sidebar a,body[data-theme="dark"] .sidebar-group-toggle{background:#3f454c;border-color:#737981;color:#f5f7fa;box-shadow:0 4px 10px rgba(0,0,0,.18)}
-body[data-theme="dark"] .sidebar a:hover,body[data-theme="dark"] .sidebar a:focus,body[data-theme="dark"] .sidebar a.is-current,body[data-theme="dark"] .sidebar-group-toggle:hover,body[data-theme="dark"] .sidebar-group-toggle:focus,body[data-theme="dark"] .sidebar-group-toggle.is-current,body[data-theme="dark"] .sidebar-group[open] .sidebar-group-toggle{background:#2c3137;border-color:#90969e;box-shadow:0 6px 14px rgba(0,0,0,.24)}
-body[data-theme="dark"] .sidebar-subnav a{background:#474d55;border-color:#737981}
-body[data-theme="dark"] .sidebar-start-btn{background:#3f454c;border-color:#737981;color:#dbe3eb;box-shadow:0 4px 10px rgba(0,0,0,.18)}
-body[data-theme="dark"] .sidebar-start-btn:hover,body[data-theme="dark"] .sidebar-start-btn:focus{background:#2c3137;border-color:#90969e;color:#fff}
-body[data-theme="dark"] .sidebar-start-btn.is-current{background:#2d8a49;border-color:#2d8a49;color:#fff}
+body[data-theme="dark"] .sidebar a,body[data-theme="dark"] .sidebar-group-toggle{background:rgba(17,22,27,.22);color:#edf1f6}
+body[data-theme="dark"] .sidebar a:hover,body[data-theme="dark"] .sidebar a:focus,body[data-theme="dark"] .sidebar a.is-current,body[data-theme="dark"] .sidebar-group-toggle:hover,body[data-theme="dark"] .sidebar-group-toggle:focus,body[data-theme="dark"] .sidebar-group-toggle.is-current,body[data-theme="dark"] .sidebar-group[open] .sidebar-group-toggle{background:rgba(17,22,27,.38)}
+body[data-theme="dark"] .sidebar-subnav a{background:rgba(17,22,27,.16)}
 body[data-theme="dark"] .content{background:#11161b}
 body[data-theme="dark"] .card,body[data-theme="dark"] .panel,body[data-theme="dark"] table,body[data-theme="dark"] .message,body[data-theme="dark"] .log-entry,body[data-theme="dark"] .exception-list li{background:#171d23;border-color:#2d3944;color:#edf1f6}
 body[data-theme="dark"] .exception-group,body[data-theme="dark"] .bi-note{background:#141a20;border-color:#2d3944}
@@ -206,6 +197,3 @@ body[data-theme="dark"] .production-refresh-btn.is-current{background:#edf1f6;co
 body[data-theme="dark"] .login-sync-state{background:#141a20;border-color:#2d3944;color:#b7c3cf}
 body[data-theme="dark"] .login-sync-hourglass{background:#1a2027;border-color:#2d3944;color:#c7d1da}
 body[data-theme="dark"] .grafana-embed-shell{background:#0f1419;border-color:#2d3944;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
-
-/* Override any misencoded symbol from older deployments. */
-.sidebar-group[open] .sidebar-group-toggle::after{content:"-"}
