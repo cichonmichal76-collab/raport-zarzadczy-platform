@@ -1,15 +1,21 @@
 {% with is_auth=request.user.is_authenticated %}
 <header class="{% if topbar_class %}{{ topbar_class }}{% else %}topbar{% endif %}">
   <div class="{% if topbar_left_class %}{{ topbar_left_class }}{% else %}topbar-side topbar-side-left{% endif %}">
-    <a href="https://www.elektromed.pl/" target="_blank" rel="noopener noreferrer" class="{% if topbar_logo_link_class %}{{ topbar_logo_link_class }}{% else %}topbar-logo-link{% endif %}" aria-label="Elektro Med">
+    <div class="{% if topbar_logo_link_class %}{{ topbar_logo_link_class }}{% else %}topbar-logo-link{% endif %}" aria-label="Elektro Med">
       <img src="https://www.elektromed.pl/media/cache/optimize/build/images/logo.a89f3274.png" alt="Elektro Med" class="{% if topbar_logo_class %}{{ topbar_logo_class }}{% else %}topbar-logo{% endif %}">
-    </a>
+    </div>
   </div>
-  <div class="{% if topbar_center_class %}{{ topbar_center_class }}{% else %}topbar-center{% endif %}">
-    <div class="{% if topbar_title_class %}{{ topbar_title_class }}{% else %}topbar-title{% endif %}">Raport Zarzadczy</div>
-  </div>
+
+  <div class="{% if topbar_center_class %}{{ topbar_center_class }}{% else %}topbar-center{% endif %}"></div>
+
   <div class="{% if topbar_right_class %}{{ topbar_right_class }}{% else %}topbar-side topbar-side-right{% endif %}">
-    <button type="button" class="theme-toggle" data-theme-toggle>Tryb ciemny</button>
+    <div class="topbar-control-block topbar-theme-block">
+      <span class="topbar-control-label">Tryb</span>
+      <button type="button" class="topbar-switch topbar-switch-theme" data-theme-toggle data-theme-state="light">
+        <span class="topbar-switch-thumb" aria-hidden="true"></span>
+        <span class="topbar-switch-label">☀</span>
+      </button>
+    </div>
     {% if is_auth %}
     <div class="{% if topbar_user_class %}{{ topbar_user_class }}{% else %}topbar-user{% endif %}">
       Zalogowany: <strong>{{ request.user.display_name|default:request.user.username }}</strong>
@@ -19,7 +25,6 @@
       <button type="submit" class="{% if topbar_button_class %}{{ topbar_button_class }}{% else %}topbar-btn{% endif %}">Wyloguj</button>
     </form>
     {% else %}
-    <div class="{% if topbar_user_class %}{{ topbar_user_class }}{% else %}topbar-user{% endif %}">Uzytkownik niezalogowany</div>
     <a href="{% url 'login' %}" class="{% if topbar_button_class %}{{ topbar_button_class }}{% else %}topbar-btn topbar-link{% endif %}">Zaloguj</a>
     {% endif %}
   </div>
@@ -30,14 +35,14 @@
     window.__raportThemeInit = true;
 
     function preferredTheme() {
-      const stored = window.localStorage.getItem("raport-theme");
+      var stored = window.localStorage.getItem("raport-theme");
       if (stored === "light" || stored === "dark") return stored;
       return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
 
     function applyQueryTheme(urlValue, theme) {
       try {
-        const url = new URL(urlValue, window.location.origin);
+        var url = new URL(urlValue, window.location.origin);
         url.searchParams.set("theme", theme === "dark" ? "dark" : "light");
         if (url.origin === window.location.origin) {
           return url.pathname + url.search + url.hash;
@@ -50,13 +55,22 @@
 
     function syncGrafanaTargets(theme) {
       document.querySelectorAll("[data-grafana-src]").forEach(function (node) {
-        const baseValue = node.dataset.baseSrc || node.getAttribute("src") || "";
+        var baseValue = node.dataset.baseSrc || node.getAttribute("src") || "";
         if (!node.dataset.baseSrc) node.dataset.baseSrc = baseValue;
         node.setAttribute("src", applyQueryTheme(baseValue, theme));
       });
 
+      document.querySelectorAll("[data-chart-src]").forEach(function (node) {
+        var chartBase = node.dataset.baseChartSrc || node.dataset.chartSrc || "";
+        var tableBase = node.dataset.baseTableSrc || node.dataset.tableSrc || "";
+        if (!node.dataset.baseChartSrc) node.dataset.baseChartSrc = chartBase;
+        if (!node.dataset.baseTableSrc) node.dataset.baseTableSrc = tableBase;
+        node.dataset.chartSrc = applyQueryTheme(chartBase, theme);
+        node.dataset.tableSrc = applyQueryTheme(tableBase, theme);
+      });
+
       document.querySelectorAll("[data-grafana-href]").forEach(function (node) {
-        const baseValue = node.dataset.baseHref || node.getAttribute("href") || "";
+        var baseValue = node.dataset.baseHref || node.getAttribute("href") || "";
         if (!node.dataset.baseHref) node.dataset.baseHref = baseValue;
         node.setAttribute("href", applyQueryTheme(baseValue, theme));
       });
@@ -64,8 +78,13 @@
 
     function syncToggleLabels(theme) {
       document.querySelectorAll("[data-theme-toggle]").forEach(function (node) {
-        node.textContent = theme === "dark" ? "Tryb jasny" : "Tryb ciemny";
-        node.setAttribute("aria-label", theme === "dark" ? "Przelacz na tryb jasny" : "Przelacz na tryb ciemny");
+        node.dataset.themeState = theme;
+        node.classList.toggle("is-on", theme === "dark");
+        node.classList.toggle("is-off", theme !== "dark");
+        var label = node.querySelector(".topbar-switch-label");
+        if (label) {
+          label.textContent = theme === "dark" ? "☾" : "☀";
+        }
       });
     }
 
@@ -77,10 +96,10 @@
     }
 
     document.addEventListener("click", function (event) {
-      const toggle = event.target.closest("[data-theme-toggle]");
+      var toggle = event.target.closest("[data-theme-toggle]");
       if (!toggle) return;
-      const current = document.documentElement.getAttribute("data-theme") || preferredTheme();
-      const next = current === "dark" ? "light" : "dark";
+      var current = document.documentElement.getAttribute("data-theme") || preferredTheme();
+      var next = current === "dark" ? "light" : "dark";
       window.localStorage.setItem("raport-theme", next);
       applyTheme(next);
     });

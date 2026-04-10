@@ -1,106 +1,35 @@
 <aside class="{% if sidebar_class %}{{ sidebar_class }}{% else %}sidebar{% endif %}">
   <nav class="{% if sidebar_nav_class %}{{ sidebar_nav_class }}{% endif %}">
-    {% with department=request.user.effective_department start_key=request.user.start_dashboard|default:request.user.default_start_dashboard %}
-    <details class="sidebar-group" {% if request.path == "/start/" %}open{% endif %}>
-      <summary class="sidebar-group-toggle{% if request.path == "/start/" %} is-current{% endif %}">START</summary>
+    <details class="sidebar-group" open>
+      <summary class="sidebar-group-toggle{% if request.path == "/" or request.path == "/bi/" %} is-current{% endif %}">Raporty BI</summary>
       <div class="sidebar-subnav">
-        <a href="/start/" {% if request.path == "/start/" %}class="is-current"{% endif %}>Panel startowy</a>
+        <a href="/" {% if request.path == "/" %}class="is-current"{% endif %}>Dashboard</a>
+        <a href="/bi/" {% if request.path == "/bi/" %}class="is-current"{% endif %}>Przeglad BI</a>
       </div>
     </details>
 
-    {% if request.user.is_superuser or request.user.is_program_admin or department == "management" %}
-    <details class="sidebar-group" {% if request.path == "/" or request.path == "/bi/" and request.GET.tab|default:"zarzad" == "zarzad" %}open{% endif %}>
-      <summary class="sidebar-group-toggle{% if request.path == "/" or request.path == "/bi/" and request.GET.tab|default:"zarzad" == "zarzad" %} is-current{% endif %}">Raporty Zarzad</summary>
+    <details class="sidebar-group" {% if request.path == "/production/" %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if request.path == "/production/" %} is-current{% endif %}">Produkcja</summary>
       <div class="sidebar-subnav">
-        <div class="sidebar-item-row">
-          <a href="/" {% if request.path == "/" %}class="is-current"{% endif %}>Dashboard zarzadu</a>
-        </div>
-        <div class="sidebar-item-row">
-          <a href="/bi/" {% if request.path == "/bi/" and request.GET.tab|default:"zarzad" == "zarzad" %}class="is-current"{% endif %}>Przeglad danych</a>
-          <form method="post" action="{% url 'set-start-dashboard' %}" class="sidebar-start-form">
-            {% csrf_token %}
-            <input type="hidden" name="dashboard_key" value="zarzad">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="sidebar-start-btn {% if start_key == 'zarzad' %}is-current{% endif %}" title="Ustaw jako START">✓</button>
-          </form>
-        </div>
+        <a href="/production/" {% if request.path == "/production/" %}class="is-current"{% endif %}>Panel produkcji</a>
       </div>
     </details>
-    {% endif %}
 
-    {% if request.user.is_superuser or request.user.is_program_admin or department == "production" %}
-    <details class="sidebar-group" {% if request.path == "/production/" or request.path == "/bi/" and request.GET.tab == "produkcja" or request.path == "/bi/" and request.GET.tab == "prodio" or request.path == "/bi/" and request.GET.tab == "prodio_ops" %}open{% endif %}>
-      <summary class="sidebar-group-toggle{% if request.path == "/production/" or request.path == "/bi/" and request.GET.tab == "produkcja" or request.path == "/bi/" and request.GET.tab == "prodio" or request.path == "/bi/" and request.GET.tab == "prodio_ops" %} is-current{% endif %}">Raporty Produkcja</summary>
+    <details class="sidebar-group" {% if request.path == "/rnd/" %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if request.path == "/rnd/" %} is-current{% endif %}">B+R</summary>
       <div class="sidebar-subnav">
-        <div class="sidebar-item-row">
-          <a href="/production/" {% if request.path == "/production/" %}class="is-current"{% endif %}>Panel produkcji</a>
-        </div>
-        <div class="sidebar-item-row">
-          <a href="/bi/?tab=produkcja" {% if request.path == "/bi/" and request.GET.tab == "produkcja" %}class="is-current"{% endif %}>Produkcja</a>
-          <form method="post" action="{% url 'set-start-dashboard' %}" class="sidebar-start-form">
-            {% csrf_token %}
-            <input type="hidden" name="dashboard_key" value="produkcja">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="sidebar-start-btn {% if start_key == 'produkcja' %}is-current{% endif %}" title="Ustaw jako START">✓</button>
-          </form>
-        </div>
-        <div class="sidebar-item-row">
-          <a href="/bi/?tab=prodio" {% if request.path == "/bi/" and request.GET.tab == "prodio" %}class="is-current"{% endif %}>Prodio</a>
-          <form method="post" action="{% url 'set-start-dashboard' %}" class="sidebar-start-form">
-            {% csrf_token %}
-            <input type="hidden" name="dashboard_key" value="prodio">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="sidebar-start-btn {% if start_key == 'prodio' %}is-current{% endif %}" title="Ustaw jako START">✓</button>
-          </form>
-        </div>
-        <div class="sidebar-item-row">
-          <a href="/bi/?tab=prodio_ops" {% if request.path == "/bi/" and request.GET.tab == "prodio_ops" %}class="is-current"{% endif %}>Operacje Prodio</a>
-          <form method="post" action="{% url 'set-start-dashboard' %}" class="sidebar-start-form">
-            {% csrf_token %}
-            <input type="hidden" name="dashboard_key" value="prodio_ops">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="sidebar-start-btn {% if start_key == 'prodio_ops' %}is-current{% endif %}" title="Ustaw jako START">✓</button>
-          </form>
-        </div>
+        <a href="/rnd/" {% if request.path == "/rnd/" %}class="is-current"{% endif %}>Panel B+R</a>
       </div>
     </details>
-    {% endif %}
 
-    {% if request.user.is_superuser or request.user.is_program_admin or department == "rnd" %}
-    <details class="sidebar-group" {% if request.path == "/rnd/" or request.path == "/bi/" and request.GET.tab == "br" %}open{% endif %}>
-      <summary class="sidebar-group-toggle{% if request.path == "/rnd/" or request.path == "/bi/" and request.GET.tab == "br" %} is-current{% endif %}">Raporty B+R</summary>
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <details class="sidebar-group" {% if "/admin/" in request.path or "/imports/" in request.path %}open{% endif %}>
+      <summary class="sidebar-group-toggle{% if "/admin/" in request.path or "/imports/" in request.path %} is-current{% endif %}">Administracja</summary>
       <div class="sidebar-subnav">
-        <div class="sidebar-item-row">
-          <a href="/rnd/" {% if request.path == "/rnd/" %}class="is-current"{% endif %}>Panel B+R</a>
-        </div>
-        <div class="sidebar-item-row">
-          <a href="/bi/?tab=br" {% if request.path == "/bi/" and request.GET.tab == "br" %}class="is-current"{% endif %}>Raport B+R</a>
-          <form method="post" action="{% url 'set-start-dashboard' %}" class="sidebar-start-form">
-            {% csrf_token %}
-            <input type="hidden" name="dashboard_key" value="br">
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
-            <button type="submit" class="sidebar-start-btn {% if start_key == 'br' %}is-current{% endif %}" title="Ustaw jako START">✓</button>
-          </form>
-        </div>
+        <a href="/admin/" {% if "/admin/" in request.path %}class="is-current"{% endif %}>Django Admin</a>
+        <a href="/imports/upload/" {% if "/imports/" in request.path %}class="is-current"{% endif %}>Wgraj dane</a>
       </div>
     </details>
     {% endif %}
-
-    {% if request.user.is_superuser or request.user.is_program_admin %}
-    <details class="sidebar-group" {% if "/admin/" in request.path or "/imports/" in request.path or "/grafana-full/" in request.path %}open{% endif %}>
-      <summary class="sidebar-group-toggle{% if "/admin/" in request.path or "/imports/" in request.path or "/grafana-full/" in request.path %} is-current{% endif %}">Administracja</summary>
-      <div class="sidebar-subnav">
-        <div class="sidebar-item-row"><a href="/admin/accounts/user/" {% if request.path == "/admin/accounts/user/" %}class="is-current"{% endif %}>Uzytkownicy</a></div>
-        <div class="sidebar-item-row"><a href="/admin/reports/reportingperiod/" {% if request.path == "/admin/reports/reportingperiod/" %}class="is-current"{% endif %}>Okresy raportowe</a></div>
-        <div class="sidebar-item-row"><a href="/admin/imports/uploadbatch/" {% if request.path == "/admin/imports/uploadbatch/" %}class="is-current"{% endif %}>Historia importow</a></div>
-        <div class="sidebar-item-row"><a href="/admin/reports/productionrecord/" {% if request.path == "/admin/reports/productionrecord/" %}class="is-current"{% endif %}>Rekordy produkcji</a></div>
-        <div class="sidebar-item-row"><a href="/admin/reports/rndrecord/" {% if request.path == "/admin/reports/rndrecord/" %}class="is-current"{% endif %}>Rekordy B+R</a></div>
-        <div class="sidebar-item-row"><a href="/imports/upload/" {% if "/imports/" in request.path %}class="is-current"{% endif %}>Wgraj dane</a></div>
-        <div class="sidebar-item-row"><a href="/grafana-full/?theme=light&orgId=1" {% if "/grafana-full/" in request.path %}class="is-current"{% endif %}>Pelna Grafana</a></div>
-        <div class="sidebar-item-row"><a href="/admin/" {% if request.path == "/admin/" %}class="is-current"{% endif %}>Django Admin</a></div>
-      </div>
-    </details>
-    {% endif %}
-    {% endwith %}
   </nav>
 </aside>
