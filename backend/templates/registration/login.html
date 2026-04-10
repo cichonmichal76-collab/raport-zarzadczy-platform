@@ -1,36 +1,500 @@
-{% extends "base.html" %}
-{% block title %}Logowanie{% endblock %}
-{% block content %}
-<section class="panel" style="max-width: 420px; margin: 40px auto;">
-  <h2>Logowanie</h2>
-  <p style="margin-bottom: 16px;">Zaloguj się, aby otworzyć dashboard zarządczy.</p>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logowanie</title>
+  <style>
+    :root {
+      --ink: #211b16;
+      --muted: #716356;
+      --paper: #fffdf9;
+      --paper-2: #f6efe5;
+      --line: #dfd0bd;
+      --copper: #b45624;
+      --copper-dark: #743614;
+      --navy: #123a71;
+      --green: #2c9b61;
+      --blue: #2383be;
+    }
 
-  {% if form.errors %}
-  <div style="margin-bottom: 16px; padding: 12px; border: 1px solid #d88; background: #fff0f0; color: #8b1e1e; border-radius: 8px;">
-    Nieprawidłowa nazwa użytkownika lub hasło.
-  </div>
-  {% endif %}
+    * {
+      box-sizing: border-box;
+    }
 
-  {% if next %}
-  <p style="margin-bottom: 12px; color: #555;">Po zalogowaniu wrócisz do poprzednio wybranej strony.</p>
-  {% endif %}
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: Aptos, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top right, rgba(35, 131, 190, .22), transparent 30vw),
+        radial-gradient(circle at left bottom, rgba(180, 86, 36, .20), transparent 34vw),
+        linear-gradient(135deg, #faf6ef 0%, #efe5d8 100%);
+    }
 
-  <form method="post">
-    {% csrf_token %}
-    <div style="display: grid; gap: 12px;">
-      <label>
-        <div style="margin-bottom: 6px; font-weight: 600;">Nazwa użytkownika</div>
-        <input type="text" name="username" autofocus required style="width: 100%; padding: 10px 12px; border: 1px solid #cfcfcf; border-radius: 8px;">
-      </label>
-      <label>
-        <div style="margin-bottom: 6px; font-weight: 600;">Hasło</div>
-        <input type="password" name="password" required style="width: 100%; padding: 10px 12px; border: 1px solid #cfcfcf; border-radius: 8px;">
-      </label>
-      <input type="hidden" name="next" value="{{ next }}">
-      <button type="submit" style="padding: 10px 14px; border: none; border-radius: 8px; background: #295ea8; color: #fff; font-weight: 700; cursor: pointer;">
-        Zaloguj się
-      </button>
-    </div>
-  </form>
-</section>
-{% endblock %}
+    .login-stage {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(360px, .75fr);
+      align-items: center;
+      gap: clamp(28px, 5vw, 96px);
+      padding: clamp(22px, 5vw, 84px);
+    }
+
+    .story {
+      min-width: 0;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: clamp(36px, 7vw, 120px);
+      color: var(--navy);
+      font-size: clamp(24px, 3vw, 44px);
+      font-weight: 850;
+      letter-spacing: -.05em;
+    }
+
+    .story h1 {
+      max-width: 12ch;
+      margin: 0 0 22px;
+      font-size: clamp(44px, 7vw, 124px);
+      line-height: .9;
+      letter-spacing: -.08em;
+    }
+
+    .story-lead {
+      max-width: 620px;
+      margin: 0 0 30px;
+      color: var(--muted);
+      font-size: clamp(17px, 1.35vw, 22px);
+      line-height: 1.5;
+    }
+
+    .story-animation {
+      position: relative;
+      max-width: 760px;
+      min-height: 330px;
+      padding: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(223, 208, 189, .95);
+      border-radius: 32px;
+      background: rgba(255, 253, 249, .76);
+      box-shadow: 0 18px 44px rgba(33, 27, 22, .10);
+      backdrop-filter: blur(8px);
+    }
+
+    .story-animation::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(35, 131, 190, .18), transparent 14%),
+        radial-gradient(circle at 78% 22%, rgba(180, 86, 36, .14), transparent 18%),
+        radial-gradient(circle at 64% 78%, rgba(44, 155, 97, .12), transparent 16%);
+      pointer-events: none;
+    }
+
+    .document-stage {
+      position: relative;
+      z-index: 1;
+      min-height: 280px;
+    }
+
+    .document-sheet {
+      position: absolute;
+      left: 22px;
+      top: 16px;
+      width: min(100%, 610px);
+      min-height: 248px;
+      padding: 26px 28px 22px;
+      border: 1px solid rgba(220, 207, 190, .9);
+      border-radius: 28px;
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 20px 40px rgba(33, 27, 22, .12);
+    }
+
+    .document-sheet::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 92px;
+      height: 92px;
+      background: linear-gradient(135deg, rgba(18,58,113,.08), rgba(18,58,113,0) 58%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+
+    .document-chip-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .document-chip {
+      padding: 8px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(18, 58, 113, .12);
+      background: #fbf7f1;
+      color: var(--copper);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .document-lines {
+      display: grid;
+      gap: 12px;
+      max-width: 430px;
+    }
+
+    .document-line {
+      position: absolute;
+      left: 0;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(18,58,113,.28), rgba(18,58,113,.08));
+    }
+
+    .document-line:nth-child(1) {
+      position: relative;
+      width: 92%;
+    }
+
+    .document-line:nth-child(2) {
+      position: relative;
+      width: 84%;
+    }
+
+    .document-line:nth-child(3) {
+      position: relative;
+      width: 88%;
+    }
+
+    .document-line:nth-child(4) {
+      position: relative;
+      width: 70%;
+    }
+
+    .magnifier {
+      position: absolute;
+      top: 72px;
+      left: 57%;
+      width: 176px;
+      height: 176px;
+      border-radius: 50%;
+      border: 10px solid rgba(18, 58, 113, .95);
+      background:
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,.82), rgba(255,255,255,.25) 42%, rgba(35,131,190,.12) 62%, rgba(35,131,190,.22) 100%);
+      box-shadow: 0 18px 28px rgba(18,58,113,.16);
+      animation: magnifierZoom 6.8s ease-in-out infinite;
+      overflow: hidden;
+    }
+
+    .magnifier::after {
+      content: "";
+      position: absolute;
+      width: 126px;
+      height: 22px;
+      right: -92px;
+      bottom: -26px;
+      transform: rotate(42deg);
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, #c9965a 0%, #a8743f 24%, #87572d 56%, #6a421f 100%);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.26),
+        inset 0 -2px 0 rgba(70, 42, 18, .28),
+        0 10px 18px rgba(18,58,113,.18);
+      border: 1px solid rgba(99, 61, 28, .36);
+      z-index: -1;
+    }
+
+    .magnifier::before {
+      content: "";
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      right: -8px;
+      bottom: 12px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #d8b184 0%, #a56e38 58%, #7f4f24 100%);
+      border: 1px solid rgba(99, 61, 28, .34);
+      box-shadow: 0 4px 8px rgba(18,58,113,.12);
+    }
+
+    .magnifier-focus {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 8px;
+      text-align: center;
+      font-weight: 900;
+      color: #123a71;
+      letter-spacing: -.05em;
+      transform: scale(1);
+      animation: lensContentZoom 6.8s ease-in-out infinite;
+    }
+
+    .focus-line {
+      display: inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 6px 12px rgba(18,58,113,.08);
+      font-size: 20px;
+      opacity: 0;
+      animation: focusWords 6.8s ease-in-out infinite;
+    }
+
+    .focus-line:nth-child(2) { animation-delay: 2.15s; }
+    .focus-line:nth-child(3) { animation-delay: 4.3s; }
+
+    .document-accent {
+      position: absolute;
+      right: 28px;
+      bottom: 22px;
+      display: grid;
+      gap: 10px;
+      width: 140px;
+    }
+
+    .document-accent span {
+      display: block;
+      height: 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(180,86,36,.86), rgba(35,131,190,.72));
+      opacity: .78;
+    }
+
+    .document-accent span:nth-child(1) { width: 82%; }
+    .document-accent span:nth-child(2) { width: 100%; }
+    .document-accent span:nth-child(3) { width: 68%; }
+
+    @keyframes magnifierZoom {
+      0%, 100% { transform: translate(0, 0) rotate(-6deg) scale(1); }
+      18% { transform: translate(0, 0) rotate(-6deg) scale(1.02); }
+      34% { transform: translate(0, 0) rotate(-6deg) scale(1.12); }
+      50% { transform: translate(0, 0) rotate(-6deg) scale(1.16); }
+      66% { transform: translate(0, 0) rotate(-6deg) scale(1.1); }
+      82% { transform: translate(0, 0) rotate(-6deg) scale(1.03); }
+    }
+
+    @keyframes lensContentZoom {
+      0%, 100% { transform: scale(.92); }
+      18% { transform: scale(.96); }
+      34% { transform: scale(1.08); }
+      50% { transform: scale(1.18); }
+      66% { transform: scale(1.1); }
+      82% { transform: scale(.98); }
+    }
+
+    @keyframes focusWords {
+      0%, 24%, 100% { opacity: 0; transform: scale(.9); }
+      6%, 18% { opacity: 1; transform: scale(1); }
+    }
+
+    .login-panel {
+      width: min(100%, 460px);
+      justify-self: center;
+      padding: clamp(26px, 4vw, 48px);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background: color-mix(in srgb, var(--paper) 94%, white);
+      box-shadow: 0 30px 80px rgba(33, 27, 22, .16);
+    }
+
+    .login-panel h2 {
+      margin: 0 0 10px;
+      font-size: 38px;
+      letter-spacing: -.07em;
+    }
+
+    .login-panel p {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.52;
+    }
+
+    .login-error {
+      margin-bottom: 18px;
+      padding: 14px 15px;
+      border: 1px solid #e4aaa2;
+      background: #fff0ee;
+      color: #8b1e1e;
+      border-radius: 18px;
+      line-height: 1.35;
+    }
+
+    .login-form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .field-label {
+      display: grid;
+      gap: 8px;
+      font-weight: 800;
+    }
+
+    .field-label input {
+      width: 100%;
+      min-width: 0;
+      padding: 15px 16px;
+      border: 1px solid #cbbbA7;
+      border-radius: 18px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+
+    .field-label input:focus {
+      border-color: var(--copper);
+      box-shadow: 0 0 0 5px rgba(180, 86, 36, .14);
+      transform: translateY(-1px);
+    }
+
+    .login-submit {
+      margin-top: 6px;
+      padding: 16px 18px;
+      border: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--copper), var(--copper-dark));
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 15px 28px rgba(116, 54, 20, .25);
+    }
+
+    .password-reset-link {
+      justify-self: center;
+      color: var(--copper-dark);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .password-reset-link:hover,
+    .password-reset-link:focus {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 960px) {
+      .login-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .brand {
+        margin-bottom: 42px;
+      }
+
+      .story {
+        text-align: center;
+      }
+
+      .story h1,
+      .motif-grid {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .story-animation { min-height: 360px; }
+      .document-sheet {
+        position: relative;
+        left: auto;
+        top: auto;
+        width: 100%;
+      }
+      .magnifier {
+        top: 110px;
+        left: 50%;
+        width: 146px;
+        height: 146px;
+      }
+      .focus-line { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="login-stage">
+    <section class="story" aria-label="Kontekst programu">
+      <div class="brand">
+        <span>Elektro Med</span>
+      </div>
+
+      <h1>Raport operacyjny</h1>
+
+      <div class="story-animation" aria-label="Animacja raportowa">
+        <div class="document-stage">
+          <article class="document-sheet" aria-hidden="true">
+            <div class="document-chip-row">
+              <span class="document-chip">Raport</span>
+              <span class="document-chip">Produkcja</span>
+              <span class="document-chip">B+R</span>
+            </div>
+            <div class="document-lines">
+              <span class="document-line"></span>
+              <span class="document-line"></span>
+              <span class="document-line"></span>
+              <span class="document-line"></span>
+            </div>
+
+            <div class="document-accent">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </article>
+
+          <div class="magnifier" aria-hidden="true">
+            <div class="magnifier-focus">
+              <span class="focus-line">Produkcja</span>
+              <span class="focus-line">KPI</span>
+              <span class="focus-line">B+R zadania</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-panel" aria-label="Logowanie">
+      <h2>Logowanie</h2>
+      <p>Zaloguj sie, aby otworzyc przypisany panel raportowy.</p>
+
+      {% if form.errors %}
+      <div class="login-error">
+        Nieprawidlowa nazwa uzytkownika lub haslo.
+      </div>
+      {% endif %}
+
+      {% if next %}
+      <p>Po zalogowaniu wrocisz do poprzednio wybranej strony.</p>
+      {% endif %}
+
+      <form method="post" class="login-form">
+        {% csrf_token %}
+        <label class="field-label">
+          Nazwa uzytkownika
+          <input type="text" name="username" autocomplete="username" autofocus required>
+        </label>
+        <label class="field-label">
+          Haslo
+          <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="login-submit">Zaloguj sie</button>
+        <a href="mailto:cichon@poczta.onet.pl?subject=Reset%20hasla%20-%20Raport" class="password-reset-link">Przypomnij haslo</a>
+      </form>
+    </section>
+  </main>
+</body>
+</html>
